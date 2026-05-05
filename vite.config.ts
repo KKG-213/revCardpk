@@ -8,14 +8,27 @@
 
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-// Disable Cloudflare plugin for Vercel deployment
-const config = defineConfig();
+// Conditional configuration for Vercel deployment
+const isVercel = process.env.VERCEL === "true";
 
-if (process.env.VERCEL === 'true') {
-  // Remove cloudflare plugin when deploying to Vercel
-  config.plugins = config.plugins?.filter((plugin: any) => 
-    !plugin.name?.includes('cloudflare')
-  ) || [];
+const config = defineConfig({
+  vite: isVercel
+    ? {
+        // Vercel-specific optimizations
+        build: {
+          outDir: "dist",
+          emptyOutDir: true,
+          sourcemap: false,
+        },
+      }
+    : {},
+});
+
+// Remove cloudflare plugin when deploying to Vercel
+if (isVercel && config.plugins) {
+  config.plugins = config.plugins.filter((plugin: any) => 
+    !plugin.name?.includes("cloudflare")
+  );
 }
 
 export default config;
